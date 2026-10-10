@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:syncroo/features/devices/domain/repositories/device_connection_repository.dart';
 
 enum MockConnectionStatus{
   disconnected,
@@ -9,28 +10,26 @@ enum MockConnectionStatus{
 }
 
 class MockConnectionCubit extends Cubit<MockConnectionStatus>{
-  MockConnectionCubit() : super(MockConnectionStatus.disconnected);
+  MockConnectionCubit({
+    required DeviceConnectionRepository repository,
+  }) : _repository = repository,
+  super(MockConnectionStatus.disconnected);
 
-  bool _shouldFailNextAttempt = false;
+  final DeviceConnectionRepository _repository;
+
 
   Future<void>connect() async{
     final canConnect = state == MockConnectionStatus.disconnected || state == MockConnectionStatus.failed;
+
     if(!canConnect) return;
     emit(MockConnectionStatus.connecting);
-    await Future<void>.delayed(const Duration(seconds: 2));
-    if(isClosed) return;
-    if(_shouldFailNextAttempt){
-      _shouldFailNextAttempt = false;
-      emit(MockConnectionStatus.failed);
-      return;
-    }
-    emit(MockConnectionStatus.connected);
-    if(state != MockConnectionStatus.disconnected) return;
-
-    emit(MockConnectionStatus.connecting);
-    await Future<void>.delayed(const Duration(seconds: 2));
-    if(isClosed)return;
-    emit(MockConnectionStatus.connected);
+    final succeeded = await _repository.connect();
+    if(isClosed ) return;
+     emit(
+    succeeded
+        ? MockConnectionStatus.connected
+        : MockConnectionStatus.failed,
+  );
   }
 
   void disconnect(){

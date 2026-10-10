@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:syncroo/features/devices/data/repositories/mock_device_connection_repository.dart';
 import 'package:syncroo/features/devices/presentations/cubit/mock_connection_cubit.dart';
 import 'package:syncroo/features/devices/presentations/widgets/device_card.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -22,7 +23,9 @@ class DeviceBridgeApp extends StatelessWidget {
         ),
       ),
       home: BlocProvider(
-        create: (_) => MockConnectionCubit(),
+        create: (_) => MockConnectionCubit(
+          repository: MockDeviceConnectionRepository(),
+        ),
         child: const DeviceDashboardPage(),
       )
     );
@@ -77,7 +80,7 @@ class DeviceDashboardPage extends StatelessWidget {
                           },                          
                           child: Text(
                             switch(status){
-                              MockConnectionStatus.disconnected => 'Connect Mock Devices',
+                              MockConnectionStatus.disconnected => 'Disconnect Mock Devices',
                               MockConnectionStatus.connecting => 'Connecting...',
                               MockConnectionStatus.connected => 'Connected',
                               MockConnectionStatus.failed => 'Retry Connection',
