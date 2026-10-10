@@ -58,24 +58,36 @@ class DeviceDashboardPage extends StatelessWidget {
                       MockConnectionStatus.disconnected => 'Disconnected • Simulated',
                       MockConnectionStatus.connected => 'Connected • Simulated',
                       MockConnectionStatus.connecting => 'Connecting • Simulated',
+                      MockConnectionStatus.failed => 'Connection failed • Simulated',
                     };
                     return Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
                         DeviceCard(deviceName: 'Samsung S25 Ultra', platformLabel: 'Andriod • Mock device', statusLabel: statusLabel),
                         const SizedBox(height: 8,),
-                        FilledButton(
-                          onPressed: status== MockConnectionStatus.disconnected
-                            ? () => context.read()<MockConnectionCubit>().connect()
-                            : null,
+                        FilledButton(                       
+                          onPressed: switch (status) {
+                            MockConnectionStatus.disconnected =>
+                              () => context.read<MockConnectionCubit>().connect(),
+                            MockConnectionStatus.connecting => null,
+                            MockConnectionStatus.connected =>
+                              () => context.read<MockConnectionCubit>().disconnect(),
+                            MockConnectionStatus.failed => 
+                              () => context.read<MockConnectionCubit>().connect(),
+                          },                          
                           child: Text(
                             switch(status){
                               MockConnectionStatus.disconnected => 'Connect Mock Devices',
                               MockConnectionStatus.connecting => 'Connecting...',
-                              MockConnectionStatus.connected => 'Connected'
+                              MockConnectionStatus.connected => 'Connected',
+                              MockConnectionStatus.failed => 'Retry Connection',
                             }
                           )
-                        )
+                        ),
+                        if(status == MockConnectionStatus.failed) ...[
+                          const SizedBox(height: 5,),
+                          const Text( 'This failure is simulated. Tap Retry connection to try again.',)
+                        ],
                       ],
                     );
                   },
