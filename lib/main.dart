@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:syncroo/features/devices/data/repositories/mock_device_connection_repository.dart';
+import 'package:syncroo/features/devices/presentations/cubit/device_discovery_cubit.dart';
 import 'package:syncroo/features/devices/presentations/cubit/mock_connection_cubit.dart';
 import 'package:syncroo/features/devices/presentations/widgets/device_card.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -22,12 +23,21 @@ class DeviceBridgeApp extends StatelessWidget {
           seedColor: const Color(0xFF4263EB),
         ),
       ),
-      home: BlocProvider(
-        create: (_) => MockConnectionCubit(
-          repository: MockDeviceConnectionRepository(),
-        ),
-        child: const DeviceDashboardPage(),
-      )
+      home: MultiBlocProvider(
+  providers: [
+    BlocProvider<MockConnectionCubit>(
+      create: (_) => MockConnectionCubit(
+        repository: MockDeviceConnectionRepository(),
+      ),
+    ),
+    BlocProvider<DeviceDiscoveryCubit>(
+      create: (_) => DeviceDiscoveryCubit(
+        repository: MockDeviceDiscoveryRepository(),
+      ),
+    ),
+  ],
+  child: const DeviceDashboardPage(),
+),
     );
   }
 }
