@@ -1,39 +1,64 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:syncroo/features/devices/domain/repositories/device_connection_repository.dart';
 
-enum MockConnectionStatus{
+import '../../domain/repositories/device_connection_repository.dart';
+
+enum MockConnectionStatus {
   disconnected,
-  connected,
   connecting,
+  connected,
   failed,
 }
 
-class MockConnectionCubit extends Cubit<MockConnectionStatus>{
+class MockConnectionCubit
+    extends Cubit<Map<String, MockConnectionStatus>> {
   MockConnectionCubit({
     required DeviceConnectionRepository repository,
   }) : _repository = repository,
-  super(MockConnectionStatus.disconnected);
+       super(const {});
 
   final DeviceConnectionRepository _repository;
 
+  Future<void> connect(String deviceId) async {
+    final current =
+        state[deviceId] ?? MockConnectionStatus.disconnected;
 
-  Future<void>connect() async{
-    final canConnect = state == MockConnectionStatus.disconnected || state == MockConnectionStatus.failed;
+    if (current == MockConnectionStatus.connecting ||
+        current == MockConnectionStatus.connected) {
+      return;
+    }
 
-    if(!canConnect) return;
-    emit(MockConnectionStatus.connecting);
-    final succeeded = await _repository.connect();
-    if(isClosed ) return;
-     emit(
-    succeeded
-        ? MockConnectionStatus.connected
-        : MockConnectionStatus.failed,
-  );
+    _update(deviceId, MockConnectionStatus.connecting);
+
+    try {
+      final succeeded = await _repository.connect(deviceId);
+
+      if (isClosed) return;
+
+      _update(
+        deviceId,
+        succeeded
+            ? MockConnectionStatus.connected
+            : MockConnectionStatus.failed,
+      );
+    } catch (_) {
+      if (isClosed) return;
+
+      _update(deviceId, MockConnectionStatus.failed);
+    }
   }
 
-  void disconnect(){
-    if(state != MockConnectionStatus.connected) return;
-    emit(MockConnectionStatus.disconnected);
+  void disconnect(String deviceId) {
+    if (state[deviceId] != MockConnectionStatus.connected) return;
+
+    _update(deviceId, MockConnectionStatus.disconnected);
+  }
+
+  void _update(String deviceId, MockConnectionStatus status) {
+    emit(
+      Map<String, MockConnectionStatus>.unmodifiable({
+        ...state,
+        deviceId: status,
+      }),
+    );
   }
 }

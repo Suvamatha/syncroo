@@ -1,3 +1,3 @@
 abstract class DeviceConnectionRepository {
-  Future<bool> connect();
+  Future<bool> connect(String deviceId);
 }

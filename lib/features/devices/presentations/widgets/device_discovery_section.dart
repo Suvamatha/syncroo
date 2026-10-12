@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:syncroo/features/devices/presentations/widgets/discovered_device_card.dart';
 
 import '../cubit/device_discovery_cubit.dart';
 import 'device_card.dart';
@@ -51,11 +52,7 @@ class DeviceDiscoverySection extends StatelessWidget {
                 Padding(
                   key: ValueKey(device.id),
                   padding: const EdgeInsets.only(bottom: 12),
-                  child: DeviceCard(
-                    deviceName: device.name,
-                    platformLabel: device.platform.name,
-                    statusLabel: 'Discovered • Simulated',
-                  ),
+                  child: DiscoveredDeviceCard(device: device),
                 ),
           ],
         );
