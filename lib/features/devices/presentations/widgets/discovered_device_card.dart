@@ -65,4 +65,4 @@ class DiscoveredDeviceCard extends StatelessWidget {
       },
     );
   }
-}//
+}
